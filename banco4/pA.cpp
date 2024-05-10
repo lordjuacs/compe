@@ -2,35 +2,21 @@
 using namespace std;
 
 int main() {
-    string input;
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+    // freopen("input.txt", "r", stdin);
+    /// bibliografia: guide to competitive programming
+    /*
+        revisar:
+        getline() ///hay distintos parametros aqui.
 
-    long int n, key;
-    cin >> n;
-    vector<int> arr(n);
-    for (long int i = 0; i < n; i++)
-        cin >> arr[i];
-    cin >> key;
-
-    long int left = 0;
-    long int right = n - 1;
-    bool flag = true;
-
-    while (left <= right) {
-        long int piv = (left + right) / 2;
-        if (arr[piv] == key) {
-            cout << piv << "\n";
-            flag = false;
-            break;
-        } else if (arr[piv] < key) {
-            left = piv + 1;
-        } else {
-            right = piv - 1;
-        }
+    */
+    long long int t, a, b;
+    cin >> t;
+    while (t--) {
+        cin >> a >> b;
+        long long int diff = abs(a - b);
+        cout << ((diff == 0) ? 0 : ((diff % 10 == 0) ? diff / 10 : (diff / 10) + 1)) << "\n";
     }
-
-    if (flag) {
-        cout << -1 << "\n";
-    }
-
     return 0;
 }
