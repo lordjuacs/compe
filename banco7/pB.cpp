@@ -1,71 +1,78 @@
-#include <algorithm>
-#include <iostream>
-#include <tuple>
-#include <vector>
+#include <bits/stdc++.h>
 
 using namespace std;
 
-const long int MAXN = 1000005;
-long int link[MAXN], len[MAXN];
+typedef long long ll;
 
-long int find(long int a) {
-    while (a != link[a]) a = link[a];
-    return a;
-}
-
-void join(long int a, long int b) {
-    if (find(a) == find(b)) return;
-    long int x = find(a), y = find(b);
-    if (len[x] > len[y]) swap(x, y);
-    len[y] += len[x];
-    link[x] = y;
-}
-
-void kruskal() {
-    long int n, m;
-    cin >> n >> m;
-    vector<tuple<long int, long int, long int>> edges;
-    for (long int i = 0; i < m; i++) {
-        long int w, a, b;
-        cin >> a >> b >> w;
-        edges.emplace_back(w, a, b);
-    }
-
-    sort(edges.begin(), edges.end());
-
-    for (long int i = 1; i <= n; i++) {
-        link[i] = i;
-        len[i] = 1;
-    }
-
-    long int total_cost = 0;
-    for (auto &e : edges) {
-        auto w = get<0>(e);
-        auto a = get<1>(e);
-        auto b = get<2>(e);
-        if (find(a) != find(b)) {
-            total_cost += w;
-            join(a, b);
+int get_weights(vector<bool> &visited, vector<vector<int>> &parent, int p,
+                unordered_map<int, unordered_map<int, int>> &mine) {
+    visited.clear();
+    visited.resize(p, false);
+    int ans = 0;
+    queue<int> q;
+    q.push(p - 1);
+    while (!q.empty()) {
+        int curr = q.front();
+        q.pop();
+        if (visited[curr]) continue;
+        visited[curr] = true;
+        for (auto e : parent[curr]) {
+            ans += mine[curr][e];
+            q.push(e);
         }
     }
+    return ans;
+}
 
-    long int components = 0;
-    for (long int i = 1; i <= n; i++) {
-        if (link[i] == i) components++;
-    }
-
-    if (components == 1) {
-        cout << total_cost << endl;
-    } else {
-        cout << "IMPOSSIBLE" << endl;
+void djikstra(vector<bool> &visited, vector<vector<pair<int, int>>> &g, vector<int> &distance, vector<vector<int>> &parent) {
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> q;
+    q.emplace(0, 0);
+    while (!q.empty()) {
+        int curr = q.top().second;
+        q.pop();
+        if (visited[curr]) continue;
+        visited[curr] = true;
+        for (auto e : g[curr]) {
+            int l = e.first;
+            int next = e.second;
+            if (distance[curr] + l < distance[next]) {
+                distance[next] = distance[curr] + l;
+                parent[next].clear();
+                parent[next].push_back(curr);
+                q.emplace(distance[next], next);
+            } else if (distance[curr] + l == distance[next]) {
+                parent[next].push_back(curr);
+            }
+        }
     }
 }
 
 int main() {
-    ios::sync_with_stdio(false);
+    ios_base::sync_with_stdio(0);
     cin.tie(0);
-    cout.tie(0);
-
-    kruskal();
+    int p, t;
+    cin >> p >> t;
+    int p1, p2, l;
+    vector<vector<pair<int, int>>> g(p);
+    unordered_map<int, unordered_map<int, int>> mine;
+    vector<bool> visited(p);
+    vector<int> distance(p, INT_MAX);
+    vector<vector<int>> parent(p);
+    distance[0] = 0;
+    for (int i = 0; i < t; ++i) {
+        cin >> p1 >> p2 >> l;
+        if (p1 == p2) continue;
+        g[p1].emplace_back(l, p2);
+        g[p2].emplace_back(l, p1);
+        if (mine.count(p1) == 0 || mine[p1].count(p2) == 0) {
+            mine[p1][p2] = l;
+            mine[p2][p1] = l;
+        } else {
+            mine[p1][p2] = min(mine[p1][p2], l);
+            mine[p2][p1] = min(mine[p2][p1], l);
+        }
+    }
+    djikstra(visited, g, distance, parent);
+    cout << 2 * get_weights(visited, parent, p, mine);
     return 0;
 }
